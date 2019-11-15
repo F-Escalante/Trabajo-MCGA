@@ -1,11 +1,13 @@
 import { createStore, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension';
+import thunk from 'redux-thunk';
 
 const initialState = {
   email: undefined,
   password: undefined,
   logged: false,
   message: undefined,
+  isLogging: false,
 }
 
 const reducer = (state = initialState, action) => {
@@ -24,19 +26,24 @@ const reducer = (state = initialState, action) => {
         logged: false,
         message: undefined
       }
-    case 'HANDLE_LOGIN': {
-      let logged = true
-      let message = 'Login realizado con éxito'
-      if (!state.email || !state.password) {
-        message = 'Debe ingresar todos los datos.'
-        logged = false
-      }
+    case 'LOGIN_PENDING':
       return {
         ...state,
-        message,
-        logged,
+        isLogging: true,
       }
-    }
+    case 'LOGIN_SUCCESS':
+      return {
+        ...state,
+        isLogging: false,
+        logged: action.payload.success,
+        message: action.payload.message,
+      }
+    case 'LOGIN_ERROR':
+      return {
+        ...state,
+        isLogging: false,
+        message: action.payload.message,
+      }
     default:
       return state
   }
@@ -58,11 +65,44 @@ export const onChangePassword = (event) => {
   }
 }
 
-export const handleLogin = () => ({
-  type: 'HANDLE_LOGIN',
-})
+export const handleLogin = (email, password) => {
 
-const middleware = []
+  return (dispatch) => {
+    dispatch({
+      type: 'LOGIN_PENDING',
+    })
+
+    const options = {
+      baseURL: 'http://localhost:4000/',
+      timeout: 25000,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+
+    return fetch(`http://localhost:4000/login`, { ...options, body: JSON.stringify({ email, password }) })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) {
+          return Promise.reject(data)
+        }
+        return dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: data,
+        })
+      })
+      .catch(error => {
+        return dispatch({
+          type: 'LOGIN_ERROR',
+          payload: error,
+        })
+      })
+  }
+
+}
+
+const middleware = [thunk]
 
 const store = createStore(reducer, composeWithDevTools(
   applyMiddleware(...middleware),
