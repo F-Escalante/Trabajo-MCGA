@@ -73,7 +73,7 @@ export const handleLogin = (email, password) => {
     })
 
     const options = {
-      baseURL: 'http://localhost:4000/',
+      baseURL: 'http://localhost:4000/', // poner acá url que da heroku
       timeout: 25000,
       method: 'POST',
       headers: {
@@ -81,7 +81,7 @@ export const handleLogin = (email, password) => {
       },
     }
 
-    return fetch(`http://localhost:4000/login`, { ...options, body: JSON.stringify({ email, password }) })
+    return fetch(`http://localhost:4000/login`, { ...options, body: JSON.stringify({ email, password }) }) //acá también reemplazar la url
       .then(res => res.json())
       .then(data => {
         if (!data.success) {
