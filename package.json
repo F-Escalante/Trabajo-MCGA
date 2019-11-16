@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines":{
-    "node": "10.5.3"
+    "node": "6.11.1"
   },
   "dependencies": {
     "install": "^0.13.0",
